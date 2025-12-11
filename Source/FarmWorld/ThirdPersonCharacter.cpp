@@ -14,26 +14,52 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Create Spring Arm
+	// Create Spring Arm (Camera Boom)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
-	CameraBoom->TargetArmLength = 400.0f;       // Distance behind character
-	CameraBoom->bUsePawnControlRotation = true; // Rotate arm based on controller
+	CameraBoom->TargetArmLength = 500.0f;               // Distance behind character
+	CameraBoom->bUsePawnControlRotation = true;         // Camera rotates around player
 	CameraBoom->bInheritPitch = true;
 	CameraBoom->bInheritYaw = true;
 	CameraBoom->bInheritRoll = false;
 
-	// Create Camera
+	// Shoulder offset (right shoulder)
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
+
+	// SMOOTH CAMERA FOLLOW
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->CameraLagSpeed = 15.f;
+	CameraBoom->CameraLagMaxDistance = 50.f;
+
+	// SMOOTH CAMERA ROTATION
+	CameraBoom->bEnableCameraRotationLag = true;
+	CameraBoom->CameraRotationLagSpeed = 10.f;
+	CameraBoom->CameraLagMaxTimeStep = 0.02f;
+
+	// CAMERA COLLISION — ENABLED HERE
+	CameraBoom->bDoCollisionTest = true;        // Enable collision checks
+	CameraBoom->ProbeSize = 15.f;              // Collision sphere radius
+	CameraBoom->ProbeChannel = ECC_Camera;     // Trace channel (standard camera collision)
+	CameraBoom->bUseCameraLagSubstepping = true; // Smoother collision behavior
+	CameraBoom->SetRelativeRotation(FRotator(-15.f, 0.f, 0.f));
+
+	// Optional: prevents camera jitter when very close  
+	CameraBoom->bDoCollisionTest = true;
+
+	// Create Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false; // Camera follows boom, not pawn
+	FollowCamera->bUsePawnControlRotation = false;     // Camera does not rotate itself
 
+	// Adventure-style movement
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 
 }
+
+
 
 // Called when the game starts or when spawned
 void AThirdPersonCharacter::BeginPlay()
