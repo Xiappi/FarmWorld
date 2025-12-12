@@ -26,6 +26,19 @@ protected:
 	void StartJump();
 	void StopJump();
 
+	// Rotation methods - examples for rotating to face a vector
+	// Method 1: Instant rotation to face a direction vector
+	void RotateToFaceDirection(const FVector& Direction);
+	
+	// Method 2: Smooth rotation to face a direction vector
+	void RotateToFaceDirectionSmooth(const FVector& Direction, float DeltaTime, float RotationSpeed = 5.0f);
+	
+	// Method 3: Rotate to face a target location
+	void RotateToFaceLocation(const FVector& TargetLocation);
+	
+	// Method 4: Smooth rotation to face a target location
+	void RotateToFaceLocationSmooth(const FVector& TargetLocation, float DeltaTime, float RotationSpeed = 5.0f);
+
 public:	
 
 	// Called to bind functionality to input

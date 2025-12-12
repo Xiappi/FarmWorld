@@ -32,7 +32,7 @@ protected:
 	// Handles applying gravity + velocity
 	void ApplyCustomGravity(float DeltaTime);
 
-	// Align character capsule to face “away” from planet
+	// Align character capsule to face ï¿½awayï¿½ from planet
 	void RotateToGravity(float DeltaTime);
 
 };

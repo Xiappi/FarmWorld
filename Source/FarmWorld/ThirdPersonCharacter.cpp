@@ -7,71 +7,71 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CustomGravityMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
-// Sets default values
-AThirdPersonCharacter::AThirdPersonCharacter(const FObjectInitializer& ObjectInitializer) :
-	Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomGravityMovementComponent>(ACharacter::CharacterMovementComponentName))
+AThirdPersonCharacter::AThirdPersonCharacter(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomGravityMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = true;
 
-	//// Disable default gravity
-	//GetCharacterMovement()->GravityScale = 0.0f;
+    //
+    // === ROTATION SETTINGS (CRITICAL) ===
+    //
 
-	// You can now use your custom movement mode immediately
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+    // Do NOT let the controller decide rotation
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw = false;
+    bUseControllerRotationRoll = false;
 
-	// CAMERA SETUP
+    // Movement component must not override any rotation
+    UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+    MoveComp->bOrientRotationToMovement = false;
+    MoveComp->bUseControllerDesiredRotation = false;
+    MoveComp->bIgnoreBaseRotation = true;
+    MoveComp->SetMovementMode(MOVE_Flying); // Required for spherical gravity
+    MoveComp->RotationRate = FRotator(0.f, 0.f, 0.f);
 
-	// Create Spring Arm (Camera Boom)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
+    //
+    // === CHARACTER MESH SHOULD FOLLOW FULL ROTATION ===
+    //
+    GetMesh()->SetUsingAbsoluteRotation(true);  // allows roll + pitch
+    GetMesh()->SetRelativeRotation(FRotator::ZeroRotator);
 
-	// Distance behind character
-	CameraBoom->TargetArmLength = 500.0f;
-	// Camera rotates around player
-	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->bInheritPitch = true;
-	CameraBoom->bInheritYaw = true;
-	CameraBoom->bInheritRoll = false;
 
-	// SMOOTH CAMERA FOLLOW
-	CameraBoom->bEnableCameraLag = true;
-	CameraBoom->CameraLagSpeed = 15.f;
-	CameraBoom->CameraLagMaxDistance = 50.f;
+    //
+    // === CAMERA SYSTEM ===
+    //
 
-	// SMOOTH CAMERA ROTATION
-	CameraBoom->bEnableCameraRotationLag = true;
-	CameraBoom->CameraRotationLagSpeed = 10.f;
-	CameraBoom->CameraLagMaxTimeStep = 0.02f;
+    // Create camera boom
+    CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+    CameraBoom->SetupAttachment(RootComponent);
 
-	// CAMERA COLLISION — ENABLED HERE
-	// Enable collision checks
-	CameraBoom->bDoCollisionTest = true;
-	// Collision sphere radius
+    CameraBoom->TargetArmLength = 500.f;
 
-	CameraBoom->ProbeSize = 15.f;
-	// Trace channel (standard camera collision)
-	CameraBoom->ProbeChannel = ECC_Camera;
-	// Smoother collision behavior
-	CameraBoom->bUseCameraLagSubstepping = true;
-	// Angle the camera slightly downward
-	CameraBoom->SetRelativeRotation(FRotator(-15.f, 0.f, 0.f));
+    // Camera SHOULD rotate with the pawn in all axes
+    CameraBoom->bUsePawnControlRotation = false;
+    CameraBoom->bInheritPitch = true;
+    CameraBoom->bInheritYaw = true;
+    CameraBoom->bInheritRoll = true;   // REQUIRED so the camera shows the character rolling
 
-	// Prevents camera jitter when very close  
-	CameraBoom->bDoCollisionTest = true;
+    // Camera smoothing
+    CameraBoom->bEnableCameraLag = true;
+    CameraBoom->CameraLagSpeed = 15.f;
 
-	// Create Follow Camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	// Camera does not rotate itself
-	FollowCamera->bUsePawnControlRotation = false;
+    CameraBoom->bEnableCameraRotationLag = true;
+    CameraBoom->CameraRotationLagSpeed = 10.f;
 
-	// Adventure-style movement
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
+    // Collision handling
+    CameraBoom->bDoCollisionTest = true;
+    CameraBoom->ProbeSize = 15.f;
+    CameraBoom->ProbeChannel = ECC_Camera;
 
+    // Create camera
+    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+    FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+    FollowCamera->bUsePawnControlRotation = false; // camera is independent of controller
 }
+
 
 void AThirdPersonCharacter::Tick(float DeltaTime)
 {
@@ -145,7 +145,60 @@ void AThirdPersonCharacter::StopJump()
 	StopJumping();
 }
 
+// Method 1: Instant rotation to face a direction vector
+void AThirdPersonCharacter::RotateToFaceDirection(const FVector& Direction)
+{
+	if (Direction.IsNearlyZero())
+		return;
 
+	// Normalize the direction vector
+	FVector NormalizedDirection = Direction.GetSafeNormal();
+	
+	// Create a rotation from the direction vector
+	FRotator NewRotation = NormalizedDirection.Rotation();
+	
+	// Set the actor's rotation directly
+	SetActorRotation(NewRotation);
+}
 
+// Method 2: Smooth rotation to face a direction vector
+void AThirdPersonCharacter::RotateToFaceDirectionSmooth(const FVector& Direction, float DeltaTime, float RotationSpeed)
+{
+	if (Direction.IsNearlyZero())
+		return;
 
+	// Normalize the direction vector
+	FVector NormalizedDirection = Direction.GetSafeNormal();
+	
+	// Calculate target rotation
+	FRotator TargetRotation = NormalizedDirection.Rotation();
+	
+	// Get current rotation
+	FRotator CurrentRotation = GetActorRotation();
+	
+	// Interpolate smoothly to target rotation
+	FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, RotationSpeed);
+	
+	// Apply the new rotation
+	SetActorRotation(NewRotation);
+}
 
+// Method 3: Rotate to face a target location
+void AThirdPersonCharacter::RotateToFaceLocation(const FVector& TargetLocation)
+{
+	// Calculate direction from character to target
+	FVector Direction = TargetLocation - GetActorLocation();
+	
+	// Use the direction-based method
+	RotateToFaceDirection(Direction);
+}
+
+// Method 4: Smooth rotation to face a target location
+void AThirdPersonCharacter::RotateToFaceLocationSmooth(const FVector& TargetLocation, float DeltaTime, float RotationSpeed)
+{
+	// Calculate direction from character to target
+	FVector Direction = TargetLocation - GetActorLocation();
+	
+	// Use the smooth direction-based method
+	RotateToFaceDirectionSmooth(Direction, DeltaTime, RotationSpeed);
+}

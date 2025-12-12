@@ -5,6 +5,8 @@
 #include "GravityFieldSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 UCustomGravityMovementComponent::UCustomGravityMovementComponent()
 {
@@ -47,30 +49,30 @@ void UCustomGravityMovementComponent::ApplyCustomGravity(float DeltaTime)
 
 void UCustomGravityMovementComponent::RotateToGravity(float DeltaTime)
 {
-	if (CurrentGravity.IsNearlyZero())
-	{
-		return;
-	}
+    ACharacter* Character = Cast<ACharacter>(GetOwner());
+    if (!Character) return;
 
-	//ACharacter* CharacterOwner = Cast<ACharacter>(UpdatedComponent->GetOwner());
-	//if (!CharacterOwner)
-	//{
-	//	return;
-	//}
+    USkeletalMeshComponent* Mesh = Character->GetMesh();
+    if (!Mesh) return;
 
-	FVector GravityUp = -CurrentGravity.GetSafeNormal();
-	FVector Forward = CharacterOwner->GetActorForwardVector();
-	FRotator CharacterRotation = CharacterOwner->GetActorRotation();
+    const FVector GravityUp = (-CurrentGravity).GetSafeNormal();
 
-	FRotator TargetRotation = FRotationMatrix::MakeFromXZ(Forward, GravityUp).Rotator();
-	FRotator NewRotation = FMath::RInterpTo(CharacterRotation, TargetRotation, DeltaTime, 5.0f);
-	
-	CharacterOwner->SetActorRotation(NewRotation);
+    FVector Forward = Mesh->GetForwardVector();
+    Forward = FVector::VectorPlaneProject(Forward, GravityUp).GetSafeNormal();
+    const FRotator TargetRotation = FRotationMatrix::MakeFromXZ(Forward, GravityUp).Rotator();
 
+    const FRotator NewRotation = FMath::RInterpTo(
+        Mesh->GetComponentRotation(),
+        TargetRotation,
+        DeltaTime,
+        5.f
+    );
+
+    Mesh->SetWorldRotation(NewRotation, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void UCustomGravityMovementComponent::SetGravityMovementMode()
 {
 	// Flying gives full 3D freedom but still respects physics
-	SetMovementMode(MOVE_Flying); 
+	SetMovementMode(MOVE_Flying);
 }
