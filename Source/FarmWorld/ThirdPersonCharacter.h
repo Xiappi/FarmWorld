@@ -15,11 +15,11 @@ class FARMWORLD_API AThirdPersonCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AThirdPersonCharacter();
+	AThirdPersonCharacter(const FObjectInitializer& ObjectInitializer);
+	virtual void Tick(float DeltaTime) override;
+
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

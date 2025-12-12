@@ -1,31 +1,38 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ThirdPersonCharacter.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/CharacterMovementComponent.h" // Add this include at the top of your file
+#include "GameFramework/CharacterMovementComponent.h"
+#include "CustomGravityMovementComponent.h"
 
 // Sets default values
-AThirdPersonCharacter::AThirdPersonCharacter()
+AThirdPersonCharacter::AThirdPersonCharacter(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomGravityMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	//// Disable default gravity
+	//GetCharacterMovement()->GravityScale = 0.0f;
+
+	// You can now use your custom movement mode immediately
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+
+	// CAMERA SETUP
 
 	// Create Spring Arm (Camera Boom)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
-	CameraBoom->TargetArmLength = 500.0f;               // Distance behind character
-	CameraBoom->bUsePawnControlRotation = true;         // Camera rotates around player
+	// Distance behind character
+	CameraBoom->TargetArmLength = 500.0f;
+	// Camera rotates around player
+	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->bInheritPitch = true;
 	CameraBoom->bInheritYaw = true;
 	CameraBoom->bInheritRoll = false;
-
-	// Shoulder offset (right shoulder)
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
 
 	// SMOOTH CAMERA FOLLOW
 	CameraBoom->bEnableCameraLag = true;
@@ -38,19 +45,26 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	CameraBoom->CameraLagMaxTimeStep = 0.02f;
 
 	// CAMERA COLLISION — ENABLED HERE
-	CameraBoom->bDoCollisionTest = true;        // Enable collision checks
-	CameraBoom->ProbeSize = 15.f;              // Collision sphere radius
-	CameraBoom->ProbeChannel = ECC_Camera;     // Trace channel (standard camera collision)
-	CameraBoom->bUseCameraLagSubstepping = true; // Smoother collision behavior
+	// Enable collision checks
+	CameraBoom->bDoCollisionTest = true;
+	// Collision sphere radius
+
+	CameraBoom->ProbeSize = 15.f;
+	// Trace channel (standard camera collision)
+	CameraBoom->ProbeChannel = ECC_Camera;
+	// Smoother collision behavior
+	CameraBoom->bUseCameraLagSubstepping = true;
+	// Angle the camera slightly downward
 	CameraBoom->SetRelativeRotation(FRotator(-15.f, 0.f, 0.f));
 
-	// Optional: prevents camera jitter when very close  
+	// Prevents camera jitter when very close  
 	CameraBoom->bDoCollisionTest = true;
 
 	// Create Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;     // Camera does not rotate itself
+	// Camera does not rotate itself
+	FollowCamera->bUsePawnControlRotation = false;
 
 	// Adventure-style movement
 	bUseControllerRotationYaw = false;
@@ -59,7 +73,9 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 
 }
 
-
+void AThirdPersonCharacter::Tick(float DeltaTime)
+{
+}
 
 // Called when the game starts or when spawned
 void AThirdPersonCharacter::BeginPlay()
