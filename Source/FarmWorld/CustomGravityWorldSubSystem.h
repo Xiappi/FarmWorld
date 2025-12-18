@@ -28,8 +28,6 @@ public: // UTickableWorldSubsystem overrides
 	void RemoveAttractor(UGravityAttractorComponent* GravityAttractorComponent);
 
 protected:
-
-	// List of existing gravity attractors in the world
 	TArray<TWeakObjectPtr<UGravityAttractorComponent>> Attractors;
 
 	// Track the CMC components

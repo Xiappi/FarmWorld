@@ -15,9 +15,11 @@
 
 AFarmWorldCharacter::AFarmWorldCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -51,13 +53,26 @@ AFarmWorldCharacter::AFarmWorldCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AFarmWorldCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+
+	CMC->BrakingDecelerationFalling = 0.f;
+	CMC->BrakingFriction = 0.f;
+	CMC->FallingLateralFriction = 0.f;
+	CMC->bUseSeparateBrakingFriction = true;
+}
+
 void AFarmWorldCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFarmWorldCharacter::DoJumpStart);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -73,8 +88,78 @@ void AFarmWorldCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	}
 }
 
+void AFarmWorldCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+
+	if (!CMC)
+	{
+		UE_LOG(LogFarmWorld, Error, TEXT("'%s' Failed to get Character Movement Component!"), *GetNameSafe(this));
+		return;
+	}
+
+	FVector GravityDirection = CMC->GetGravityDirection();
+	FVector UpDir = -GravityDirection;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = TraceStart + GravityDirection * TraceOffset;
+
+	FRotator GravityRot = FRotationMatrix::MakeFromZ(UpDir).Rotator();
+	FQuat GravityQuat = GravityRot.Quaternion();
+
+	FCollisionQueryParams Params = FCollisionQueryParams(SCENE_QUERY_STAT(PlanetGroundProbe), /*bTraceComplex*/ false);
+	Params.AddIgnoredActor(this);  // if inside Character class; otherwise GetOwner()
+
+
+	FHitResult Hit;
+	bool bHit = GetWorld()->SweepSingleByChannel(
+		Hit,
+		TraceStart,
+		TraceEnd,
+		GravityQuat,
+		ECC_Visibility,
+		FCollisionShape::MakeSphere(GroundProbeRadius),
+		Params
+	);
+	DrawDebugLine(
+		GetWorld(),
+		TraceStart,
+		TraceEnd,
+		bHit ? FColor::Green : FColor::Red,
+		false,
+		-1.f,
+		0,
+		1.f
+	);
+
+	DrawDebugSphere(
+		GetWorld(),
+		TraceEnd,
+		GroundProbeRadius,
+		12,
+		bHit ? FColor::Green : FColor::Red,
+		false,
+		-1.f,
+		0,
+		1.f
+	);
+
+	BGrounded = CMC->IsMovingOnGround() || CMC->CurrentFloor.IsWalkableFloor() || bHit;
+
+	if (BGrounded)
+	{
+		CMC->SetMovementMode(MOVE_Walking);
+	}
+}
+
 void AFarmWorldCharacter::Move(const FInputActionValue& Value)
 {
+
+	if (!BGrounded)
+	{
+		return;
+	}
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -98,7 +183,6 @@ void AFarmWorldCharacter::Move(const FInputActionValue& Value)
 
 void AFarmWorldCharacter::Look(const FInputActionValue& Value)
 {
-
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -119,11 +203,40 @@ void AFarmWorldCharacter::DoLook(float Yaw, float Pitch)
 void AFarmWorldCharacter::DoJumpStart()
 {
 	// signal the character to jump
-	Jump();
+	if (UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		const FVector GravityDir = CMC->GetGravityDirection(); // toward planet
+		const FVector Velocity = CMC->Velocity;
+
+		// Preserve orbital (tangential) velocity
+		const FVector TangentialVelocity =
+			FVector::VectorPlaneProject(Velocity, GravityDir);
+
+		Super::Jump();
+
+		// Re-apply tangential velocity AFTER jump impulse
+		CMC->Velocity =
+			TangentialVelocity +
+			FVector::DotProduct(CMC->Velocity, GravityDir) * GravityDir;
+
+		DrawDebugLine(
+			GetWorld(),
+			GetActorLocation(),
+			GetActorLocation() + CMC->Velocity * 0.1f,
+			FColor::Green,
+			false,
+			2.0f,
+			0,
+			5.0f);
+	}
+	else
+	{
+		Super::Jump();
+	}
 }
 
 void AFarmWorldCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
-	StopJumping();
+	//StopJumping();
 }

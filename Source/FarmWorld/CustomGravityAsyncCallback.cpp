@@ -66,7 +66,7 @@ void FCustomGravityAsyncCallback::OnPreIntegrate_Internal()
 					}
 
 					{
-						FDebugDrawQueue::GetInstance().DrawDebugDirectionalArrow(ActiveParticle.GetX(), ActiveParticle.GetX() + ActiveParticle.Acceleration() + AdditionalAcceleration, 20.f, FColor::Emerald, false, 0, 0, 2.f);
+						//FDebugDrawQueue::GetInstance().DrawDebugDirectionalArrow(ActiveParticle.GetX(), ActiveParticle.GetX() + ActiveParticle.Acceleration() + AdditionalAcceleration, 20.f, FColor::Emerald, false, 0, 0, 2.f);
 						//FDebugDrawQueue::GetInstance().DrawDebugDirectionalArrow(ActiveParticle.GetX(), ActiveParticle.GetX() - ActiveParticle.GetR().GetUpVector()* (ActiveParticle.Acceleration() + AdditionalAcceleration).Length(), 20.f, FColor::Cyan, false, 0, 0, 1.f);
 						//FDebugDrawQueue::GetInstance().DrawDebugString(ActiveParticle.GetX(), * FString::Printf(TEXT("I:%.2f / A:%.2f"), ActiveParticle.Acceleration().Length(), AdditionalAcceleration.Length()),nullptr, FColor::Red, 0, false, 1.0f  );
 					}

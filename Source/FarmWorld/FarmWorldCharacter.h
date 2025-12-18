@@ -30,7 +30,10 @@ class AFarmWorldCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
+	void Tick(float DeltaTime) override;
+	void BeginPlay() override;
+
 protected:
 
 	/** Jump Input Action */
@@ -49,10 +52,19 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	bool BGrounded;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	float TraceOffset = 63.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	float GroundProbeRadius = 30.f;
+
 public:
 
 	/** Constructor */
-	AFarmWorldCharacter();	
+	AFarmWorldCharacter();
 
 protected:
 

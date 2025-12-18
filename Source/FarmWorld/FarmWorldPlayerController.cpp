@@ -46,8 +46,6 @@ void AFarmWorldPlayerController::SetupInputComponent()
 			for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
 			{
 				Subsystem->AddMappingContext(CurrentContext, 0);
-
-				UE_LOG(LogTemp, Display, TEXT("Hello"));
 			}
 
 			// only add these IMCs if we're not using mobile touch input
@@ -56,8 +54,6 @@ void AFarmWorldPlayerController::SetupInputComponent()
 				for (UInputMappingContext* CurrentContext : MobileExcludedMappingContexts)
 				{
 					Subsystem->AddMappingContext(CurrentContext, 0);
-					UE_LOG(LogTemp, Display, TEXT("Hello2"));
-
 				}
 			}
 		}

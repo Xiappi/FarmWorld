@@ -53,8 +53,6 @@ void UCustomGravityWorldSubSystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, *FString::Printf(TEXT("%d Attractors in the World"), Attractors.Num()));
-
 	if (!IsAsyncCallbackRegistered())
 	{
 		RegisterAsyncCallback();
@@ -112,12 +110,17 @@ void UCustomGravityWorldSubSystem::UpdateCMCGravities()
 				// Intensity
 				double Intensity = GravityAttractorData.MassDotG / SquaredDistance;
 
+				if (FMath::IsNearlyZero(Intensity))
+				{
+					continue;
+				}
+
 				// Add the new acceleration to the force field.  
 				AdditionalAcceleration += Intensity * Direction;
 			}
 		}
 
-		DrawDebugDirectionalArrow(GetWorld(), CMComponent->GetActorLocation(), CMComponent->GetActorLocation() + AdditionalAcceleration, 1.0, FColor::Red, 0, false, 1.0f  );
+		//DrawDebugDirectionalArrow(GetWorld(), CMComponent->GetActorLocation(), CMComponent->GetActorLocation() + AdditionalAcceleration, 1.0, FColor::Red, 0, false, 1.0f  );
 		//DrawDebugString(GetWorld(), CMComponent->GetActorLocation(), * FString::Printf(TEXT("%.2f"), AdditionalAcceleration.Length()), nullptr, FColor::Red, 0, false, 1.0f  );
 
 		CMComponent->AddForce(AdditionalAcceleration * CMComponent->Mass);
