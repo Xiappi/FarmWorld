@@ -202,41 +202,11 @@ void AFarmWorldCharacter::DoLook(float Yaw, float Pitch)
 
 void AFarmWorldCharacter::DoJumpStart()
 {
-	// signal the character to jump
-	if (UCharacterMovementComponent* CMC = GetCharacterMovement())
-	{
-		const FVector GravityDir = CMC->GetGravityDirection(); // toward planet
-		const FVector Velocity = CMC->Velocity;
-
-		// Preserve orbital (tangential) velocity
-		const FVector TangentialVelocity =
-			FVector::VectorPlaneProject(Velocity, GravityDir);
-
-		Super::Jump();
-
-		// Re-apply tangential velocity AFTER jump impulse
-		CMC->Velocity =
-			TangentialVelocity +
-			FVector::DotProduct(CMC->Velocity, GravityDir) * GravityDir;
-
-		DrawDebugLine(
-			GetWorld(),
-			GetActorLocation(),
-			GetActorLocation() + CMC->Velocity * 0.1f,
-			FColor::Green,
-			false,
-			2.0f,
-			0,
-			5.0f);
-	}
-	else
-	{
-		Super::Jump();
-	}
+	Super::Jump();
 }
 
 void AFarmWorldCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
-	//StopJumping();
+	StopJumping();
 }
