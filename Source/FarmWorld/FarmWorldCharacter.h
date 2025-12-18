@@ -100,5 +100,11 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	float GroundDisableDuration = 0.15f;
+	float GroundDisableRemaining = 0.f;
+	void HandleGroundedCheck(UCharacterMovementComponent* CMC);
+
 };
 

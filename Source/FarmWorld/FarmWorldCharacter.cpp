@@ -99,6 +99,28 @@ void AFarmWorldCharacter::Tick(float DeltaTime)
 		return;
 	}
 
+	if (GroundDisableRemaining > 0.f)
+	{
+		GroundDisableRemaining = FMath::Max(
+			0.f,
+			GroundDisableRemaining - DeltaTime
+		);
+	}
+
+	const bool bGroundCheckEnabled = (GroundDisableRemaining <= 0.f);
+
+	if (bGroundCheckEnabled)
+	{
+		HandleGroundedCheck(CMC);
+	}
+	else
+	{
+		BGrounded = false;
+	}
+}
+
+void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
+{
 	FVector GravityDirection = CMC->GetGravityDirection();
 	FVector UpDir = -GravityDirection;
 	FVector TraceStart = GetActorLocation();
@@ -109,7 +131,6 @@ void AFarmWorldCharacter::Tick(float DeltaTime)
 
 	FCollisionQueryParams Params = FCollisionQueryParams(SCENE_QUERY_STAT(PlanetGroundProbe), /*bTraceComplex*/ false);
 	Params.AddIgnoredActor(this);  // if inside Character class; otherwise GetOwner()
-
 
 	FHitResult Hit;
 	bool bHit = GetWorld()->SweepSingleByChannel(
@@ -203,6 +224,8 @@ void AFarmWorldCharacter::DoLook(float Yaw, float Pitch)
 void AFarmWorldCharacter::DoJumpStart()
 {
 	Super::Jump();
+	GroundDisableRemaining = GroundDisableDuration;
+
 }
 
 void AFarmWorldCharacter::DoJumpEnd()
