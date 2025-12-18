@@ -129,8 +129,8 @@ void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
 	FRotator GravityRot = FRotationMatrix::MakeFromZ(UpDir).Rotator();
 	FQuat GravityQuat = GravityRot.Quaternion();
 
-	FCollisionQueryParams Params = FCollisionQueryParams(SCENE_QUERY_STAT(PlanetGroundProbe), /*bTraceComplex*/ false);
-	Params.AddIgnoredActor(this);  // if inside Character class; otherwise GetOwner()
+	FCollisionQueryParams Params = FCollisionQueryParams(SCENE_QUERY_STAT(PlanetGroundProbe), false);
+	Params.AddIgnoredActor(this);
 
 	FHitResult Hit;
 	bool bHit = GetWorld()->SweepSingleByChannel(
@@ -142,28 +142,12 @@ void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
 		FCollisionShape::MakeSphere(GroundProbeRadius),
 		Params
 	);
-	DrawDebugLine(
-		GetWorld(),
-		TraceStart,
-		TraceEnd,
-		bHit ? FColor::Green : FColor::Red,
-		false,
-		-1.f,
-		0,
-		1.f
-	);
 
-	DrawDebugSphere(
-		GetWorld(),
-		TraceEnd,
-		GroundProbeRadius,
-		12,
-		bHit ? FColor::Green : FColor::Red,
-		false,
-		-1.f,
-		0,
-		1.f
-	);
+	// debug draw
+	{ 
+		// DrawDebugLine(GetWorld(), TraceStart, TraceEnd, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
+		// DrawDebugSphere(GetWorld(), TraceEnd, GroundProbeRadius, 12, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
+	}
 
 	BGrounded = CMC->IsMovingOnGround() || CMC->CurrentFloor.IsWalkableFloor() || bHit;
 
