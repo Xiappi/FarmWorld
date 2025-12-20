@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "FarmWorld.h"
 #include "GravityController.h"
+#include <InventoryComponent.h>
 
 AFarmWorldCharacter::AFarmWorldCharacter()
 {
@@ -26,17 +27,15 @@ AFarmWorldCharacter::AFarmWorldCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 500.f;
-	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+	CMC->bOrientRotationToMovement = true;
+	CMC->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	CMC->JumpZVelocity = 500.f;
+	CMC->AirControl = 0.35f;
+	CMC->MaxWalkSpeed = 500.f;
+	CMC->MinAnalogWalkSpeed = 20.f;
+	CMC->BrakingDecelerationWalking = 2000.f;
+	CMC->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -49,8 +48,8 @@ AFarmWorldCharacter::AFarmWorldCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	// Inventory
+	Inventory = CreateDefaultSubobject<UInventoryComponent>("Inventory");
 }
 
 void AFarmWorldCharacter::BeginPlay()
@@ -145,8 +144,8 @@ void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
 
 	// debug draw
 	{ 
-		// DrawDebugLine(GetWorld(), TraceStart, TraceEnd, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
-		// DrawDebugSphere(GetWorld(), TraceEnd, GroundProbeRadius, 12, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
+		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
+		DrawDebugSphere(GetWorld(), TraceEnd, GroundProbeRadius, 12, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
 	}
 
 	BGrounded = CMC->IsMovingOnGround() || CMC->CurrentFloor.IsWalkableFloor() || bHit;

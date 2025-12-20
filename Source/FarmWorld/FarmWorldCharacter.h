@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "InventoryComponent.h"
+#include <InventoryWidget.h>
 #include "FarmWorldCharacter.generated.h"
 
 class USpringArmComponent;
@@ -22,7 +24,8 @@ UCLASS(abstract)
 class AFarmWorldCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
+	
+public:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -31,8 +34,9 @@ class AFarmWorldCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	void Tick(float DeltaTime) override;
-	void BeginPlay() override;
+	/* Inventory component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UInventoryComponent* Inventory;
 
 protected:
 
@@ -65,6 +69,8 @@ public:
 
 	/** Constructor */
 	AFarmWorldCharacter();
+	void Tick(float DeltaTime) override;
+	void BeginPlay() override;
 
 protected:
 

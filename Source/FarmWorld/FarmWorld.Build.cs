@@ -26,19 +26,6 @@ public class FarmWorld : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] {
 			"FarmWorld",
-			"FarmWorld/Variant_Platforming",
-			"FarmWorld/Variant_Platforming/Animation",
-			"FarmWorld/Variant_Combat",
-			"FarmWorld/Variant_Combat/AI",
-			"FarmWorld/Variant_Combat/Animation",
-			"FarmWorld/Variant_Combat/Gameplay",
-			"FarmWorld/Variant_Combat/Interfaces",
-			"FarmWorld/Variant_Combat/UI",
-			"FarmWorld/Variant_SideScrolling",
-			"FarmWorld/Variant_SideScrolling/AI",
-			"FarmWorld/Variant_SideScrolling/Gameplay",
-			"FarmWorld/Variant_SideScrolling/Interfaces",
-			"FarmWorld/Variant_SideScrolling/UI"
 		});
 
 		// Uncomment if you are using Slate UI
