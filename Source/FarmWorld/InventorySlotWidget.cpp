@@ -21,28 +21,6 @@
 void UInventorySlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	UE_LOG(LogTemp, Warning, TEXT("NATIVE CONSTRUCT"));
-
-
-	if (RootOverlay)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("RootOverlay is bound successfully."));
-	}
-
-	if (SizeBox)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SizeBox is bound successfully."));
-	}
-
-	if (ItemImage)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ItemImage is bound successfully."));
-	}
-
-	if (ItemQuantityText)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ItemQuantityText is bound successfully."));
-	}
 }
 
 void UInventorySlotWidget::SetupSlot(UItemDefinition* Item, int32 Quantity, int32 InSlotIndex)

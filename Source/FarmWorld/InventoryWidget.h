@@ -7,7 +7,9 @@
 #include "ItemDefinition.h"
 #include "Components/UniformGridPanel.h"
 #include "InventorySlotWidget.h"
+#include <InventoryComponent.h>
 #include "InventoryWidget.generated.h"
+
 
 UCLASS()
 class FARMWORLD_API UInventoryWidget : public UUserWidget
@@ -16,7 +18,10 @@ class FARMWORLD_API UInventoryWidget : public UUserWidget
 	
 public:
 	UFUNCTION(BlueprintCallable)
-	void RebuildInventory(const TArray<FInventorySlot>& Slots, int32 MaxSlots);
+	void RebuildInventory();
+
+    UFUNCTION(BlueprintCallable)
+    void SetInventory(UInventoryComponent* InInventory);
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -27,4 +32,6 @@ protected:
 
     UPROPERTY(EditDefaultsOnly)
     int32 Columns = 10;
+
+    UInventoryComponent* Inventory = nullptr;
 };
