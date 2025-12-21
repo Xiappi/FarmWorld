@@ -3,7 +3,7 @@
 
 #include "PickupItem.h"
 #include "Components\SphereComponent.h"
-#include "FarmWorld\FarmWorldCharacter.h"
+//#include "FarmWorld\FarmWorldCharacter.h"
 
 APickupItem::APickupItem()
 {

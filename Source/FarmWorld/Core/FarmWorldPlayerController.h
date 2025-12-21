@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "GravityController.h"
+#include "FarmWorld/Systems/Gravity/GravityController.h"
 #include "FarmWorldPlayerController.generated.h"
 
 class UInputMappingContext;

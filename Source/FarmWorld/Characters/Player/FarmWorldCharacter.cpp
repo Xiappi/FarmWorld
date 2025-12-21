@@ -11,8 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "FarmWorld.h"
-#include "GravityController.h"
-#include <InventoryComponent.h>
+#include "FarmWorld/Systems/Gravity/GravityController.h"
+#include "FarmWorld/Components/Inventory/InventoryComponent.h"
 
 AFarmWorldCharacter::AFarmWorldCharacter()
 {

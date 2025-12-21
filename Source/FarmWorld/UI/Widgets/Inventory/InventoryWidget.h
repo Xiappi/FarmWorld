@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ItemDefinition.h"
+#include "FarmWorld/Data/Item/ItemDefinition.h"
 #include "Components/UniformGridPanel.h"
 #include "InventorySlotWidget.h"
-#include <InventoryComponent.h>
+#include "FarmWorld/Components/Inventory/InventoryComponent.h"
 #include "InventoryWidget.generated.h"
 
 

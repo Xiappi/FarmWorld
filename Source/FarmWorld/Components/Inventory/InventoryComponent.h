@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ItemDefinition.h"
+#include "FarmWorld/Data/Item/ItemDefinition.h"
 #include "InventoryComponent.generated.h"
 
 // Broadcast delegate function for inventory changes

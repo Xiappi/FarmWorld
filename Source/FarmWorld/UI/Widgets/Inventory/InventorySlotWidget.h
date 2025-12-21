@@ -9,7 +9,7 @@
 #include "Components\Overlay.h"
 #include "Components\Image.h"
 #include "Components\TextBlock.h"
-#include "ItemDefinition.h"
+#include "FarmWorld/Data/Item/ItemDefinition.h"
 #include "InventorySlotWidget.generated.h"
 
 

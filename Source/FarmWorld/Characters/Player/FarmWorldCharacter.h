@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "InventoryComponent.h"
-#include <InventoryWidget.h>
+#include "FarmWorld/Components/Inventory/InventoryComponent.h"
+#include "FarmWorld/UI/Widgets/Inventory/InventoryWidget.h"
 #include "FarmWorldCharacter.generated.h"
 
 class USpringArmComponent;

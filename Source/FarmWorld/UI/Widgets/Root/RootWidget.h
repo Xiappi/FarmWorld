@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "InventoryWidget.h"
+#include "FarmWorld/UI/Widgets/Inventory/InventoryWidget.h"
 #include "Components\WidgetSwitcher.h"
 #include "RootWidget.generated.h"
 
