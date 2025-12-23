@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "FarmWorld/Components/Inventory/InventoryComponent.h"
 #include "FarmWorld/UI/Widgets/Inventory/InventoryWidget.h"
+#include "UI\Widgets\Root\RootWidget.h"
 #include "FarmWorldCharacter.generated.h"
 
 class USpringArmComponent;
@@ -56,6 +57,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	/** Menu Input Action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* MenuAction;
+
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	bool BGrounded;
 
@@ -84,6 +89,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	// Called for menu input
+	void TogglePlayerUI();
 
 public:
 

@@ -13,6 +13,7 @@
 #include "FarmWorld.h"
 #include "FarmWorld/Systems/Gravity/GravityController.h"
 #include "FarmWorld/Components/Inventory/InventoryComponent.h"
+#include <Core\FarmWorldPlayerController.h>
 
 AFarmWorldCharacter::AFarmWorldCharacter()
 {
@@ -80,6 +81,10 @@ void AFarmWorldCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFarmWorldCharacter::Look);
+
+		// Menu
+		EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Triggered, this, &AFarmWorldCharacter::TogglePlayerUI);
+
 	}
 	else
 	{
@@ -215,4 +220,12 @@ void AFarmWorldCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AFarmWorldCharacter::TogglePlayerUI()
+{
+	if (AFarmWorldPlayerController* PC = Cast<AFarmWorldPlayerController>(GetController()))
+	{
+		PC->ToggleRootUI();
+	}
 }

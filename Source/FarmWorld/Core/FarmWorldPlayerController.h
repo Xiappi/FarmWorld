@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "FarmWorld/Systems/Gravity/GravityController.h"
+#include <UI\Widgets\Root\RootWidget.h>
 #include "FarmWorldPlayerController.generated.h"
 
 class UInputMappingContext;
@@ -50,4 +51,19 @@ protected:
 	/** Returns true if the player should use UMG touch controls */
 	bool ShouldUseTouchControls() const;
 
+public:
+	UFUNCTION(BlueprintCallable)
+	void ToggleRootUI();
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<URootWidget> RootWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<URootWidget> RootWidget;
+
+	bool bRootMenuVisible = false;
+
+	void ShowRootUI();
+	void HideRootUI();
 };
