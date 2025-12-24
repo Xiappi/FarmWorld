@@ -95,7 +95,6 @@ void UCustomGravityWorldSubSystem::HandleGravityConsumers(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Green, FString::Printf(TEXT("Gravity Consumers: %d"), GravityConsumers.Num()));
 	for (auto GravityConsumerObj : GravityConsumers)
 	{
-
 		if (!GravityConsumerObj.IsValid())
 		{
 			continue;

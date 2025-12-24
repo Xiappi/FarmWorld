@@ -33,6 +33,7 @@ FGravityAttractorData UGravityAttractorComponent::GetGravityAttractorData() cons
 	{
 		GravityAttractorData.MassDotG = Mass * 6.67430E-5; // G = 6.67430E-11 m³kg⁻¹s⁻², because 1m equals 100 UE Units, we have to multiply by a 100³ factor, so E-11 goes E-5 
 	}
+
 	return GravityAttractorData;
 }
 

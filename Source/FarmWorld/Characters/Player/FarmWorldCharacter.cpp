@@ -149,8 +149,8 @@ void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
 
 	// debug draw
 	{ 
-		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
-		DrawDebugSphere(GetWorld(), TraceEnd, GroundProbeRadius, 12, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
+		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
+		//DrawDebugSphere(GetWorld(), TraceEnd, GroundProbeRadius, 12, bHit ? FColor::Green : FColor::Red, false, -1.f, 0, 1.f);
 	}
 
 	BGrounded = CMC->IsMovingOnGround() || CMC->CurrentFloor.IsWalkableFloor() || bHit;
@@ -163,16 +163,20 @@ void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
 
 void AFarmWorldCharacter::ApplyGravity(const FVector& GravityDirection, float GravityStrength, float DeltaTime)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Yellow, FString::Printf(TEXT("Applying Gravity to '%s'"), *GetNameSafe(this)));
 	UCharacterMovementComponent* CMC = GetCharacterMovement();
 	const FVector Force = GravityDirection * GravityStrength * CMC->Mass;
 
 	CMC->AddForce(Force);
 	CMC->SetGravityDirection(GravityDirection);
+
+	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() +  GravityDirection * 100.f, FColor::Green, false, -1.f, 0.f, 1.f);
 }
 
 FVector AFarmWorldCharacter::GetGravitySampleLocation() const
 {
-	return FVector();
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+	return CMC->GetActorLocation();
 }
 
 void AFarmWorldCharacter::Move(const FInputActionValue& Value)
