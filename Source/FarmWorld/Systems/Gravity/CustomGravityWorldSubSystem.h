@@ -7,6 +7,7 @@
 #include "GravityAttractorComponent.h"
 #include "CustomGravityAsyncCallback.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include <GravityConsumer.h>
 #include "CustomGravityWorldSubSystem.generated.h"
 
 UCLASS()
@@ -20,13 +21,13 @@ public: // UTickableWorldSubsystem overrides
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual TStatId GetStatId() const override;
 	void UpdateCMCGravities();
-
+	void HandleGravityConsumers(float DeltaTime);
 	virtual void Tick(float DeltaTime) override;
 
 	// Keep track of any attractors (optional)
 	void AddAttractor(UGravityAttractorComponent* GravityAttractorComponent);
 	void RemoveAttractor(UGravityAttractorComponent* GravityAttractorComponent);
-
+	FVector ComputeGravityAtLocation(const FVector& SampleLocation);
 protected:
 	TArray<TWeakObjectPtr<UGravityAttractorComponent>> Attractors;
 
@@ -38,6 +39,7 @@ protected:
 	FDelegateHandle ActorDestroyedHandle;
 
 	TArray<TWeakObjectPtr<UCharacterMovementComponent>> TrackedCharacterMovementComponents;
+	TArray<TWeakObjectPtr<UObject>> GravityConsumers;
 public:
 	// Register async callback with physics system.
 	virtual void RegisterAsyncCallback();

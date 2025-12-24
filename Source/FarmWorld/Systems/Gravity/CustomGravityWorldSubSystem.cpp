@@ -128,9 +128,60 @@ void UCustomGravityWorldSubSystem::UpdateCMCGravities()
 	}
 }
 
+void UCustomGravityWorldSubSystem::HandleGravityConsumers(float DeltaTime)
+{
+	GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Green, FString::Printf(TEXT("Gravity Consumers: %d"), GravityConsumers.Num()));
+	for (auto GravityConsumerObj : GravityConsumers)
+	{
+
+		if (!GravityConsumerObj.IsValid())
+		{
+			continue;
+		}
+
+		IGravityConsumer* Consumer = Cast<IGravityConsumer>(GravityConsumerObj.Get());
+
+		if (Consumer && Consumer->IsGravityEnabled())
+		{
+			// Compute the gravity from all attractors
+			FVector SampleLocation = Consumer->GetGravitySampleLocation();
+			FVector TotalGravity = ComputeGravityAtLocation(SampleLocation);
+
+			// Apply the computed gravity to the consumer
+			Consumer->ApplyGravity(TotalGravity.GetSafeNormal(), TotalGravity.Size(), DeltaTime);
+		}
+	}
+}
+
+FVector UCustomGravityWorldSubSystem::ComputeGravityAtLocation(const FVector& SampleLocation)
+{
+	FVector TotalGravity = FVector::ZeroVector;
+	for (auto& GravityAttractor : Attractors)
+	{
+		if (GravityAttractor->ApplyGravity)
+		{
+			FGravityAttractorData GravityAttractorData = GravityAttractor->GetGravityAttractorData();
+			// Direction
+			FVector Direction(GravityAttractorData.Location - SampleLocation);
+			double SquaredDistance = FVector::DotProduct(Direction, Direction); // We'll be using UE units here, no meters... 
+			Direction.Normalize();
+			// Intensity
+			double Intensity = GravityAttractorData.MassDotG / SquaredDistance;
+			if (FMath::IsNearlyZero(Intensity))
+			{
+				continue;
+			}
+			// Add to total gravity
+			TotalGravity += Intensity * Direction;
+		}
+	}
+	return TotalGravity;
+}
+
 void UCustomGravityWorldSubSystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	HandleGravityConsumers(DeltaTime);
 	UpdateCMCGravities();
 }
 
@@ -141,6 +192,12 @@ void UCustomGravityWorldSubSystem::AddActorToTrackedCharacters(AActor* Actor)
 		return;
 	}
 
+	if (Actor->GetClass()->ImplementsInterface(UGravityConsumer::StaticClass()))
+	{
+		GravityConsumers.Add(Actor);
+	}
+
+	// REMOVE ME LATER: CMC tracking for legacy reasons
 	Actor->ForEachComponent<UCharacterMovementComponent>(true, [this](UCharacterMovementComponent* CMComponent)
 		{
 			if (CMComponent)
@@ -157,6 +214,12 @@ void UCustomGravityWorldSubSystem::RemoveActorFromTrackedCharacters(AActor* Acto
 		return;
 	}
 
+	if (Actor->GetClass()->ImplementsInterface(UGravityConsumer::StaticClass()))
+	{
+		GravityConsumers.Remove(Actor);
+	}
+
+	// REMOVE ME LATER: CMC tracking for legacy reasons
 	Actor->ForEachComponent<UCharacterMovementComponent>(true, [this](UCharacterMovementComponent* CMComponent)
 		{
 			if (CMComponent)
