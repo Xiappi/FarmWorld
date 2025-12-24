@@ -16,8 +16,8 @@ void UCustomGravityWorldSubSystem::Initialize(FSubsystemCollectionBase& Collecti
 	if (UWorld* World = GetWorld())
 	{
 		// Register delegates to track the ones created/destroyed on the fly
-		ActorSpawnedHandle = World->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &UCustomGravityWorldSubSystem::AddActorToTrackedCharacters));
-		ActorDestroyedHandle = World->AddOnActorDestroyedHandler(FOnActorDestroyed::FDelegate::CreateUObject(this, &UCustomGravityWorldSubSystem::RemoveActorFromTrackedCharacters));
+		ActorSpawnedHandle = World->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &UCustomGravityWorldSubSystem::AddGravityConsumer));
+		ActorDestroyedHandle = World->AddOnActorDestroyedHandler(FOnActorDestroyed::FDelegate::CreateUObject(this, &UCustomGravityWorldSubSystem::RemoveGravityConsumer));
 	}
 }
 
@@ -29,7 +29,7 @@ void UCustomGravityWorldSubSystem::Deinitialize()
 		World->RemoveOnActorDestroyedHandler(ActorDestroyedHandle);
 	}
 
-	TrackedCharacterMovementComponents.Empty();
+	GravityConsumers.Empty();
 
 	Super::Deinitialize();
 }
@@ -61,7 +61,7 @@ void UCustomGravityWorldSubSystem::OnWorldBeginPlay(UWorld& InWorld)
 	// Find the existing Actors with a Character Movement Component
 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
-		AddActorToTrackedCharacters(*ActorItr);
+		AddGravityConsumer(*ActorItr);
 	}
 }
 
@@ -87,44 +87,6 @@ void UCustomGravityWorldSubSystem::AddGravityAttractorData(const FGravityAttract
 	{
 		FCustomGravityAsyncInput* Input = AsyncCallback->GetProducerInputData_External();
 		Input->GravityAttractorsData.Add(InputData);
-	}
-}
-
-void UCustomGravityWorldSubSystem::UpdateCMCGravities()
-{
-	for (auto CMComponent : TrackedCharacterMovementComponents)
-	{
-		// Compute the gravity from all attractors
-		FVector AdditionalAcceleration = FVector::ZeroVector;
-		for (auto& GravityAttractor : Attractors)
-		{
-			if (GravityAttractor->ApplyGravity)
-			{
-				FGravityAttractorData GravityAttractorData = GravityAttractor->GetGravityAttractorData();
-
-				// Direction
-				FVector Direction(GravityAttractorData.Location - CMComponent->GetActorLocation());
-				double SquaredDistance = FVector::DotProduct(Direction, Direction); // We'll be using UE units here, no meters... 
-				Direction.Normalize();
-
-				// Intensity
-				double Intensity = GravityAttractorData.MassDotG / SquaredDistance;
-
-				if (FMath::IsNearlyZero(Intensity))
-				{
-					continue;
-				}
-
-				// Add the new acceleration to the force field.  
-				AdditionalAcceleration += Intensity * Direction;
-			}
-		}
-
-		//DrawDebugDirectionalArrow(GetWorld(), CMComponent->GetActorLocation(), CMComponent->GetActorLocation() + AdditionalAcceleration, 1.0, FColor::Red, 0, false, 1.0f  );
-		//DrawDebugString(GetWorld(), CMComponent->GetActorLocation(), * FString::Printf(TEXT("%.2f"), AdditionalAcceleration.Length()), nullptr, FColor::Red, 0, false, 1.0f  );
-
-		CMComponent->AddForce(AdditionalAcceleration * CMComponent->Mass);
-		CMComponent->SetGravityDirection(AdditionalAcceleration.GetSafeNormal());
 	}
 }
 
@@ -161,20 +123,25 @@ FVector UCustomGravityWorldSubSystem::ComputeGravityAtLocation(const FVector& Sa
 		if (GravityAttractor->ApplyGravity)
 		{
 			FGravityAttractorData GravityAttractorData = GravityAttractor->GetGravityAttractorData();
+
 			// Direction
 			FVector Direction(GravityAttractorData.Location - SampleLocation);
 			double SquaredDistance = FVector::DotProduct(Direction, Direction); // We'll be using UE units here, no meters... 
 			Direction.Normalize();
+
 			// Intensity
 			double Intensity = GravityAttractorData.MassDotG / SquaredDistance;
+
 			if (FMath::IsNearlyZero(Intensity))
 			{
 				continue;
 			}
+
 			// Add to total gravity
 			TotalGravity += Intensity * Direction;
 		}
 	}
+
 	return TotalGravity;
 }
 
@@ -182,10 +149,9 @@ void UCustomGravityWorldSubSystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	HandleGravityConsumers(DeltaTime);
-	UpdateCMCGravities();
 }
 
-void UCustomGravityWorldSubSystem::AddActorToTrackedCharacters(AActor* Actor)
+void UCustomGravityWorldSubSystem::AddGravityConsumer(AActor* Actor)
 {
 	if (!Actor)
 	{
@@ -196,18 +162,9 @@ void UCustomGravityWorldSubSystem::AddActorToTrackedCharacters(AActor* Actor)
 	{
 		GravityConsumers.Add(Actor);
 	}
-
-	// REMOVE ME LATER: CMC tracking for legacy reasons
-	Actor->ForEachComponent<UCharacterMovementComponent>(true, [this](UCharacterMovementComponent* CMComponent)
-		{
-			if (CMComponent)
-			{
-				TrackedCharacterMovementComponents.Add(CMComponent);
-			}
-		});
 }
 
-void UCustomGravityWorldSubSystem::RemoveActorFromTrackedCharacters(AActor* Actor)
+void UCustomGravityWorldSubSystem::RemoveGravityConsumer(AActor* Actor)
 {
 	if (!Actor)
 	{
@@ -218,13 +175,4 @@ void UCustomGravityWorldSubSystem::RemoveActorFromTrackedCharacters(AActor* Acto
 	{
 		GravityConsumers.Remove(Actor);
 	}
-
-	// REMOVE ME LATER: CMC tracking for legacy reasons
-	Actor->ForEachComponent<UCharacterMovementComponent>(true, [this](UCharacterMovementComponent* CMComponent)
-		{
-			if (CMComponent)
-			{
-				TrackedCharacterMovementComponents.Remove(CMComponent);
-			}
-		});
 }

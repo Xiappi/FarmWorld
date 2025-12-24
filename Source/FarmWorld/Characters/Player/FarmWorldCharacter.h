@@ -8,6 +8,7 @@
 #include "FarmWorld/Components/Inventory/InventoryComponent.h"
 #include "FarmWorld/UI/Widgets/Inventory/InventoryWidget.h"
 #include "UI\Widgets\Root\RootWidget.h"
+#include "FarmWorld/GravityConsumer.h"
 #include "FarmWorldCharacter.generated.h"
 
 class USpringArmComponent;
@@ -22,7 +23,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
  *  Implements a controllable orbiting camera
  */
 UCLASS(abstract)
-class AFarmWorldCharacter : public ACharacter
+class AFarmWorldCharacter : public ACharacter, public IGravityConsumer
 {
 	GENERATED_BODY()
 	
@@ -119,6 +120,12 @@ private:
 	float GroundDisableDuration = 0.15f;
 	float GroundDisableRemaining = 0.f;
 	void HandleGroundedCheck(UCharacterMovementComponent* CMC);
+
+
+	// Inherited via IGravityConsumer
+	void ApplyGravity(const FVector& GravityDirection, float GravityStrength, float DeltaTime) override;
+
+	FVector GetGravitySampleLocation() const override;
 
 };
 

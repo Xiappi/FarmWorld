@@ -23,10 +23,6 @@ APickupItem::APickupItem()
 	MeshComponent->SetEnableGravity(false);
 	MeshComponent->SetLinearDamping(2.5f);
 	MeshComponent->SetAngularDamping(10.f);  
-	MeshComponent->SetConstraintMode(EDOFMode::SixDOF);
-	MeshComponent->BodyInstance.bLockXRotation = true;
-	MeshComponent->BodyInstance.bLockYRotation = true;
-	MeshComponent->BodyInstance.bLockZRotation = true;
 
 	// Collision sphere settings
 	CollisionSphere->InitSphereRadius(CollisionRadius);
@@ -88,7 +84,8 @@ void APickupItem::Tick(float DeltaTime)
 /*
 	I just wanted to make a note here that this function is called by the gravity system every tick,
 	and items "tick" themselves as well. So this means that items have a double tick.
-	This can affect performance if there are many items in the world at once.
+	This can affect performance if there are many items in the world at once. 
+	Should all the "tick" logic be moved here instead?
 */
 void APickupItem::ApplyGravity(const FVector& GravityDirection, float GravityStrength, float DeltaTime)
 {

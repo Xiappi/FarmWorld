@@ -15,12 +15,12 @@ class FARMWORLD_API UCustomGravityWorldSubSystem : public UTickableWorldSubsyste
 {
 	GENERATED_BODY()
 
-public: // UTickableWorldSubsystem overrides
+public: 
+	// UTickableWorldSubsystem overrides
 	virtual void Deinitialize() override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual TStatId GetStatId() const override;
-	void UpdateCMCGravities();
 	void HandleGravityConsumers(float DeltaTime);
 	virtual void Tick(float DeltaTime) override;
 
@@ -30,14 +30,10 @@ public: // UTickableWorldSubsystem overrides
 	FVector ComputeGravityAtLocation(const FVector& SampleLocation);
 protected:
 	TArray<TWeakObjectPtr<UGravityAttractorComponent>> Attractors;
-
-	// Track the CMC components
-	void AddActorToTrackedCharacters(AActor* Actor);
-	void RemoveActorFromTrackedCharacters(AActor* Actor);
-
+	void AddGravityConsumer(AActor* Actor);
+	void RemoveGravityConsumer(AActor* Actor);
 	FDelegateHandle ActorSpawnedHandle;
 	FDelegateHandle ActorDestroyedHandle;
-
 	TArray<TWeakObjectPtr<UCharacterMovementComponent>> TrackedCharacterMovementComponents;
 	TArray<TWeakObjectPtr<UObject>> GravityConsumers;
 public:

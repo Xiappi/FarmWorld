@@ -161,6 +161,20 @@ void AFarmWorldCharacter::HandleGroundedCheck(UCharacterMovementComponent* CMC)
 	}
 }
 
+void AFarmWorldCharacter::ApplyGravity(const FVector& GravityDirection, float GravityStrength, float DeltaTime)
+{
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+	const FVector Force = GravityDirection * GravityStrength * CMC->Mass;
+
+	CMC->AddForce(Force);
+	CMC->SetGravityDirection(GravityDirection);
+}
+
+FVector AFarmWorldCharacter::GetGravitySampleLocation() const
+{
+	return FVector();
+}
+
 void AFarmWorldCharacter::Move(const FInputActionValue& Value)
 {
 
